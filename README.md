@@ -1,6 +1,6 @@
 # Research Question Answering App
 
-This is a Streamlit application that allows users to upload a PDF research, input a question about the research, and receive a detailed summary or answer based on the content of the PDF using gimini model.
+This is a Streamlit application that allows users to upload a PDF research, input a question about the research, and receive a detailed summary or answer based on the content of the PDF using gemini model.
 
 ## Features
 

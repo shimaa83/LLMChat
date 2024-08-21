@@ -19,7 +19,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 def process_pdf_and_ask_question(pdf_file, question):
     # Load PDF document
-    loader = PyPDFLoader('TSP_CMC_19450.pdf')
+    loader = PyPDFLoader(pdf_file)
     data = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000)
     split_data = text_splitter.split_documents(data)

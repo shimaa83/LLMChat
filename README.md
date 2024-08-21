@@ -32,6 +32,7 @@ This is a Streamlit application that allows users to upload a PDF research, inpu
 3. Start the Streamlit app:
   -  streamlit run chat.py
 
+![LLM](https://github.com/user-attachments/assets/b3adcc4e-0566-433b-b733-f830337c0ba7)
 
 
 

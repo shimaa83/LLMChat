@@ -12,6 +12,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.document_loaders import PyPDFLoader
 
 import streamlit as st
+import tempfile
 
 # Load environment variables
 load_dotenv(".env")
@@ -21,18 +22,23 @@ def process_pdf_and_ask_question(pdf_file, question):
     # Load PDF document
     loader = PyPDFLoader(pdf_file)
     data = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000)
-    split_data = text_splitter.split_documents(data)
+
     # Split text
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000)
     split_data = text_splitter.split_documents(data)
+
     # Generate embeddings
     embeddings = GoogleGenerativeAIEmbeddings(model='models/embedding-001')
     vectorstore = Chroma.from_documents(documents=split_data, embedding=embeddings)
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k":10})
 
     # Set up LLM and prompts
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0, max_output_tokens=None, timeout=None, google_api_key=GOOGLE_API_KEY)
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-pro",
+        temperature=0,
+        max_output_tokens=None,
+        google_api_key=GOOGLE_API_KEY
+    )
     system_prompt = (
         """
         You are an assistant for question-answering tasks.
@@ -45,7 +51,7 @@ def process_pdf_and_ask_question(pdf_file, question):
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", system_prompt),
-            ("human", "(input)")
+            ("human", "{input}")
         ]
     )
 
@@ -58,15 +64,18 @@ def process_pdf_and_ask_question(pdf_file, question):
     return response['answer']
 
 # Streamlit UI
-st.title('Research Question Answering')
+st.title('📄 Research PDF Question Answering with Gemini Pro')
 
-uploaded_pdf = st.file_uploader("Upload a PDF file", type="pdf")
-st.write()
-question = st.text_input("Enter your question about the PDF")
+uploaded_pdf = st.file_uploader("📤 Upload a PDF file", type="pdf")
+question = st.text_input("❓ Enter your question about the PDF")
+
 if st.button('Get Answer'):
     if uploaded_pdf and question:
-         pdf=uploaded_pdf.name
-         answer = process_pdf_and_ask_question(pdf, question)
-         st.text_area("Answer", answer, height=300)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(uploaded_pdf.read())
+            tmp_file_path = tmp_file.name
+
+        answer = process_pdf_and_ask_question(tmp_file_path, question)
+        st.text_area("💡 Answer", answer, height=300)
     else:
-         st.error("Please upload a PDF and enter a question.")
+        st.error("⚠️ Please upload a PDF and enter a question.")
